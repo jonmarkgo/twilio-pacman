@@ -32,12 +32,15 @@
   
   <div id="shim">shim for font face</div>
 
-  <h1>HTML5 Pacman</h1>
-
-  <a href="http://arandomurl.com/">Writeup</a> |
-  Code on <a href="http://arandomurl.com/">Github</a>
-
+  <h1>Twilio Pacman</h1>
   <div id="pacman"></div>
+  <div>
+<form id="phoneform">
+  <input id="phonenum" placeholder="+18881234567" /><input type="submit" value="Start Game" />
+</form>
+  </div>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="/socket.io/socket.io.js"></script>
   <script src="pacman.js"></script>
   <script src="modernizr-1.5.min.js"></script>
 
@@ -54,5 +57,17 @@
     }
   </script>
 
+<script>
+     $(function () {
+        var socket = io.connect()
+          , phonenumber = $('#phonenum')
+          , phoneform = $('#phoneform');
+        phoneform.submit(function (e) {
+          e.preventDefault();
+          socket.emit('init phone', phonenumber.val());
+        });
+      });
+
+</script>
 </body>
 </html>

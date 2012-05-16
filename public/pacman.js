@@ -22,7 +22,7 @@ var NONE        = 4,
     Pacman      = {};
 
 Pacman.FPS = 30;
-
+var socket = io.connect();
 Pacman.Ghost = function (game, map, colour) {
 
     var position  = null,
@@ -286,10 +286,10 @@ Pacman.User = function (game, map) {
         score     = 5,
         keyMap    = {};
     
-    keyMap[KEY.ARROW_LEFT]  = LEFT;
-    keyMap[KEY.ARROW_UP]    = UP;
-    keyMap[KEY.ARROW_RIGHT] = RIGHT;
-    keyMap[KEY.ARROW_DOWN]  = DOWN;
+    keyMap[4]  = LEFT;
+    keyMap[2]    = UP;
+    keyMap[6] = RIGHT;
+    keyMap[8]  = DOWN;
 
     function addScore(nScore) { 
         score += nScore;
@@ -332,11 +332,9 @@ Pacman.User = function (game, map) {
         resetPosition();
     };        
     
-    function keyDown(e) {
-        if (typeof keyMap[e.keyCode] !== "undefined") { 
-            due = keyMap[e.keyCode];
-            e.preventDefault();
-            e.stopPropagation();
+    function keyDown(digit) {
+        if (typeof keyMap[digit] !== "undefined") { 
+            due = keyMap[digit];
             return false;
         }
         return true;
@@ -832,24 +830,22 @@ var PACMAN = (function () {
         startLevel();
     }
 
-    function keyDown(e) {
-        if (e.keyCode === KEY.N) {
-            startNewGame();
-        } else if (e.keyCode === KEY.S) {
+    function keyDown(digit) {
+        if (digit === 5) {
             audio.disableSound();
             localStorage["soundDisabled"] = !soundDisabled();
-        } else if (e.keyCode === KEY.P && state === PAUSE) {
+        } else if (digit === 0 && state === PAUSE) {
             audio.resume();
             map.draw(ctx);
             setState(stored);
-        } else if (e.keyCode === KEY.P) {
+        } else if (digit === 0) {
             stored = state;
             setState(PAUSE);
             audio.pause();
             map.draw(ctx);
             dialog("Paused");
         } else if (state !== PAUSE) {   
-            return user.keyDown(e);
+            return user.keyDown(digit);
         }
         return true;
     }    
@@ -968,7 +964,7 @@ var PACMAN = (function () {
         } else if (state === WAITING && stateChanged) {            
             stateChanged = false;
             map.draw(ctx);
-            dialog("Press N to start a New game");            
+            dialog("Enter Phone # to Start a New Game");            
         } else if (state === EATEN_PAUSE && 
                    (tick - timerStart) > (Pacman.FPS / 3)) {
             map.draw(ctx);
@@ -1018,13 +1014,6 @@ var PACMAN = (function () {
         map.reset();
         user.newLevel();
         startLevel();
-    };
-
-    function keyPress(e) { 
-        if (state !== WAITING && state !== PAUSE) { 
-            e.preventDefault();
-            e.stopPropagation();
-        }
     };
     
     function init(wrapper, root) {
@@ -1081,10 +1070,13 @@ var PACMAN = (function () {
         
     function loaded() {
 
-        dialog("Press N to Start");
-        
-        document.addEventListener("keydown", keyDown, true);
-        document.addEventListener("keypress", keyPress, true); 
+        dialog("Enter Phone # to Start");
+        socket.on('digit entered', function (digit) {
+            keyDown(digit);
+        });
+        socket.on('phone answered', function (val) {
+            startNewGame();
+        });
         
         timer = window.setInterval(mainLoop, 1000 / Pacman.FPS);
     };
@@ -1094,28 +1086,6 @@ var PACMAN = (function () {
     };
     
 }());
-
-/* Human readable keyCode index */
-var KEY = {'BACKSPACE': 8, 'TAB': 9, 'NUM_PAD_CLEAR': 12, 'ENTER': 13, 'SHIFT': 16, 'CTRL': 17, 'ALT': 18, 'PAUSE': 19, 'CAPS_LOCK': 20, 'ESCAPE': 27, 'SPACEBAR': 32, 'PAGE_UP': 33, 'PAGE_DOWN': 34, 'END': 35, 'HOME': 36, 'ARROW_LEFT': 37, 'ARROW_UP': 38, 'ARROW_RIGHT': 39, 'ARROW_DOWN': 40, 'PRINT_SCREEN': 44, 'INSERT': 45, 'DELETE': 46, 'SEMICOLON': 59, 'WINDOWS_LEFT': 91, 'WINDOWS_RIGHT': 92, 'SELECT': 93, 'NUM_PAD_ASTERISK': 106, 'NUM_PAD_PLUS_SIGN': 107, 'NUM_PAD_HYPHEN-MINUS': 109, 'NUM_PAD_FULL_STOP': 110, 'NUM_PAD_SOLIDUS': 111, 'NUM_LOCK': 144, 'SCROLL_LOCK': 145, 'SEMICOLON': 186, 'EQUALS_SIGN': 187, 'COMMA': 188, 'HYPHEN-MINUS': 189, 'FULL_STOP': 190, 'SOLIDUS': 191, 'GRAVE_ACCENT': 192, 'LEFT_SQUARE_BRACKET': 219, 'REVERSE_SOLIDUS': 220, 'RIGHT_SQUARE_BRACKET': 221, 'APOSTROPHE': 222};
-
-(function () {
-	/* 0 - 9 */
-	for (var i = 48; i <= 57; i++) {
-        KEY['' + (i - 48)] = i;
-	}
-	/* A - Z */
-	for (i = 65; i <= 90; i++) {
-        KEY['' + String.fromCharCode(i)] = i;
-	}
-	/* NUM_PAD_0 - NUM_PAD_9 */
-	for (i = 96; i <= 105; i++) {
-        KEY['NUM_PAD_' + (i - 96)] = i;
-	}
-	/* F1 - F12 */
-	for (i = 112; i <= 123; i++) {
-        KEY['F' + (i - 112 + 1)] = i;
-	}
-})();
 
 Pacman.WALL    = 0;
 Pacman.BISCUIT = 1;
