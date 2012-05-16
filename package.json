@@ -1,0 +1,21 @@
+{
+  "author": "Jonathan Gottfried <jonmarkgo@gmail.com>",
+  "name": "twilio-pacman",
+  "description": "Twilio + Node.js Pacman Game",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jonmarkgo/twilio-pacman.git"
+  },
+  "main": "app.js",
+  "dependencies": {
+      "socket.io": "*"
+    , "express": "2.5.x"
+    , "twilio": "0.4.0"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
