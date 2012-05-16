@@ -16,7 +16,7 @@ io.sockets.on('connection', function (socket) {
   function getDigits() {
     var getDigit = new Twiml.Gather(null, {numDigits: 1});
     getDigit.on('gathered', function (reqParams, resp) {
-      if (reqParams.Digits === 1) {
+      if (reqParams.Digits === '1') {
         socket.emit('phone answered', 1);
       } else {
         socket.emit('digit entered', reqParams.Digits);
